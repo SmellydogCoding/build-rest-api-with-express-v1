@@ -4,11 +4,11 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
-const methodOverride = require('method-override');
+// const bodyParser = require('body-parser');
+// const methodOverride = require('method-override');
 const mongoose = require('mongoose');
-const session = require('express-session');
-const mongoStore = require('connect-mongo')(session);
+// const session = require('express-session');
+// const mongoStore = require('connect-mongo')(session);
 
 // mongodb connection
 mongoose.connect("mongodb://localhost:27017/course-rating");
@@ -40,11 +40,11 @@ db.on('error', console.error.bind(console, 'connection error:'));
 // });
 
 // enable method=DELETE and method=PUT in HTML forms
-app.use(methodOverride('_method'));
+// app.use(methodOverride('_method'));
 
 // Body Parser
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extended: false}));
 
 // API Routes
 const users = require('./users.js');
@@ -60,6 +60,23 @@ app.use(morgan('dev'));
 
 // setup our static route to serve files from the "public" folder
 app.use('/', express.static('public'));
+
+// catch 404 and forward to error handler
+app.use((req, res, next) => {
+  let error = new Error('File Not Found');
+  error.status = 404;
+  next(error);
+});
+
+// error handler
+// define as the last app.use callback
+app.use((error, req, res, next) => {
+  res.status(error.status || 500);
+  res.send({
+    message: error.message,
+    error: {}
+  });
+});
 
 // start listening on our port
 var server = app.listen(app.get('port'), function() {
