@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 // mongodb connection
 mongoose.connect("mongodb://localhost:27017/course-rating");
 const db = mongoose.connection;
+db.on('open', () => {console.log('Database connection successful')});
 // mongo error
 db.on('error', console.error.bind(console, 'connection error:'));
 
