@@ -2,20 +2,31 @@
 
 const express = require('express');
 const courses = express.Router();
+const Users = require('./models/users.js');
+const Reviews = require('./models/reviews.js');
+const Courses = require('./models/courses.js');
 
 courses.get('/', (req, res, next) => {
-  let courses = {
-    data: [
-      {
-        "_id": "32l3kl42j3l2k4j342lk4j3l2k",
-        "title": "Mock Course Title"
-      }
-  ]
-};
-  res.status = 200;
-  res.send(courses);
-});
+  Courses.find().populate('user', 'fullName').populate('reviews').exec((error, courses) => {
+    
+    let options = {
+      path: 'reviews.user',
+      model: 'User'
+    };
 
+    if (error) {
+      return next(error);
+    } else {
+      res.status = 200;
+      Courses.populate(courses, options, (error, courses) => {
+        courses = {data: courses}
+        res.json(courses);
+      });
+      // res.send(courses);
+    }
+  });
+});
+ 
 courses.post('/', (req, res, next) => {
   
 });

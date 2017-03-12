@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+require('./courses.js');
 const UserSchema = new mongoose.Schema({
     fullName: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     emailAddress: {
       type: String,
@@ -11,7 +12,7 @@ const UserSchema = new mongoose.Schema({
       required: true,
       trim: true
     },
-    hashedPassword: {
+    password: {
       type: String,
       required: true
     }

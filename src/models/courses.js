@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const Users = require('./users.js');
+const User = require('./users.js');
 const Reviews = require('./reviews.js')
 const CourseSchema = new mongoose.Schema({
-    user: Users._id,
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     title: String,
     description: String,
     estimatedTime: String,
@@ -14,16 +14,17 @@ const CourseSchema = new mongoose.Schema({
         description: String
       }
     ],
-    reviews: [Reviews._id]
+    reviews: [{type: mongoose.Schema.Types.ObjectId, ref: 'Review'}]
 });
 
-CourseSchema.virtual('overallRating').get(() => {
-  let total;
-  this.reviews.forEach((review) => {
-    total += review.rating;
-  });
-  return total / reviews.length;
-});
+// CourseSchema.virtual('overallRating').get(() => {
+//   let total;
+//   this.reviews.forEach((review) => {
+//     total += review.rating;
+//   });
+//   return total / reviews.length;
+//   console.log(reviews);
+// });
 
 const Course = mongoose.model('Course', CourseSchema);
 module.exports = Course;
