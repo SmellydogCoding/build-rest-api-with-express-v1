@@ -22,7 +22,6 @@ courses.get('/', (req, res, next) => {
         courses = {data: courses}
         res.json(courses);
       });
-      // res.send(courses);
     }
   });
 });
@@ -32,7 +31,24 @@ courses.post('/', (req, res, next) => {
 });
 
 courses.get('/:id', (req, res, next) => {
-  
+  let id = req.params.id;
+  Courses.findById(id).populate('user', 'fullName').populate('reviews').exec((error, courses) => {
+    
+    let options = {
+      path: 'reviews.user',
+      model: 'User'
+    };
+
+    if (error) {
+      return next(error);
+    } else {
+      res.status = 200;
+      Courses.populate(courses, options, (error, courses) => {
+        courses = {data: [courses]};
+        res.json(courses);
+      });
+    }
+  });
 });
 
 courses.put('/:id', (req, res, next) => {

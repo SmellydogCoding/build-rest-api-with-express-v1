@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "nodemon ./src/index.js localhost 5000",
-    "debug": "iron-node ./src/index.js localhost 5000"
+    "debug": "nodemon --inspect ./src/index.js localhost 5000"
   },
   "author": "",
   "license": "ISC",
