@@ -7,21 +7,13 @@ const Reviews = require('./models/reviews.js');
 const Courses = require('./models/courses.js');
 
 courses.get('/', (req, res, next) => {
-  Courses.find().populate('user', 'fullName').populate('reviews').exec((error, courses) => {
-    
-    let options = {
-      path: 'reviews.user',
-      model: 'User'
-    };
-
+  Courses.find({}, (error,courses) => {
     if (error) {
       return next(error);
     } else {
-      res.status = 200;
-      Courses.populate(courses, options, (error, courses) => {
+        res.status = 200;
         courses = {data: courses}
         res.json(courses);
-      });
     }
   });
 });

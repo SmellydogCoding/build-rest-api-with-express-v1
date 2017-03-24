@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-require('./courses.js');
+const bcrypt = require('bcrypt');
+// require('./courses.js');
+
 const UserSchema = new mongoose.Schema({
     fullName: {
       type: String,
@@ -16,6 +18,18 @@ const UserSchema = new mongoose.Schema({
       type: String,
       required: true
     }
+});
+
+// hash password before saving to database
+UserSchema.pre('save', (next) => {
+  let user = this;
+  bcrypt.hash(user.password, 10, (error, hash) => {
+    if (error) {
+      return next(error);
+    }
+    user.password = hash;
+    next();
+  })
 });
 
 const User = mongoose.model('User', UserSchema);

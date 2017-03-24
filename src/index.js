@@ -4,7 +4,7 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-// const bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 // const methodOverride = require('method-override');
 const mongoose = require('mongoose');
 // const session = require('express-session');
@@ -48,8 +48,8 @@ db.on('error', console.error.bind(console, 'connection error:'));
 // app.use(methodOverride('_method'));
 
 // Body Parser
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 
 // API Routes
 const users = require('./users.js');
