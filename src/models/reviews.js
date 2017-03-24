@@ -3,7 +3,12 @@ const Users = require('./users.js');
 const ReviewSchema = new mongoose.Schema({
     user: {type: mongoose.Schema.Types.ObjectId, ref: 'Users'},
     postedOn: Date,
-    rating: Number,
+    rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5
+    },
     review: String
 });
 
