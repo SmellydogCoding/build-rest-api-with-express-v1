@@ -16,7 +16,16 @@ users.get('/', (req, res, next) => {
 });
 
 users.post('/', (req, res, next) => {
-  
+  let user = new Users(req.body);
+  user.save((error,user) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status = 201;
+      res.location('/');
+      res.end();
+    }
+  });
 });
 
 module.exports = users;

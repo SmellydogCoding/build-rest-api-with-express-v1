@@ -26,25 +26,26 @@ const UserSchema = new mongoose.Schema({
 });
 
 // hash password before saving to database
-UserSchema.pre('save', (next) => {
-  let user = this;
-  bcrypt.hash(user.password, 10, (error, hash) => {
+UserSchema.pre('save', function(next)  {
+  bcrypt.hash(this.password, 10, function(error, hash) {
     if (error) {
       return next(error);
+    } else {
+      this.password = hash;
+      this.confirmPassword = hash;
+      next();
     }
-    user.password = hash;
-    next();
-  })
+  });
 });
 
-UserSchema.pre('validate', (next) => {
-  let user = this;
-  if (user.password !== user.confirmPassword) {
-      next(Error('Passwords must match'));
-  } else {
-      next();
-  }
-});
+// UserSchema.pre('validate', function(next) {
+//   let user = this;
+//   if (user.password !== user.confirmPassword) {
+//     next(Error('Passwords must match'));
+//   } else {
+//     next();
+//   }
+// });
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;

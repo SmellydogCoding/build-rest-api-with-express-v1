@@ -19,7 +19,16 @@ courses.get('/', (req, res, next) => {
 });
  
 courses.post('/', (req, res, next) => {
-  
+  let course = new Courses(req.body);
+  course.save((error,course) => {
+    if (error) {
+      return next(error);
+    } else {
+      res.status = 201;
+      res.location('/');
+      res.end();
+    }
+  });
 });
 
 courses.get('/:id', (req, res, next) => {
@@ -44,15 +53,69 @@ courses.get('/:id', (req, res, next) => {
 });
 
 courses.put('/:id', (req, res, next) => {
-  
+  let id = req.params.id;
+  Courses.findById(id).populate('user', 'fullName').populate('reviews').exec((error, course) => {
+    
+    let options = {
+      path: 'reviews.user',
+      model: 'User'
+    };
+
+    if (error) {
+      return next(error);
+    } else {
+      res.status = 200;
+      Courses.populate(course, options, (error, course) => {
+        course.update(req.body,(error,result) => {
+          if (error) {
+            return next(error);
+          } else {
+            res.status = 204;
+            res.end();
+          }
+        });
+      });
+    }
+  });
 });
 
 courses.post('/:courseid/reviews', (req, res, next) => {
-  
+  let id = req.params.courseid;
+  let review = new Reviews(req.body);
+  review.save((error,review) => {
+    if (error) {
+      return next(error);
+    } else {
+      Courses.update({_id: id}, {$push: {reviews: review}}, (error,success) => {
+        if (error) {
+          return next(error);
+        } else {
+          res.status = 201;
+          res.location('/' + id);
+          res.end();
+        }
+      });
+    }
+  });
 });
 
 courses.delete('/:courseid/reviews/:id', (req, res, next) => {
-  
+  let cID = req.params.courseid;
+  let rID = req.params.id;
+  Reviews.findByIdAndRemove(rID, (error,success) => {
+    if (error) {
+      return next(error);
+    } else {
+      Courses.update({_id: cID},{$pull: {reviews: rID}}, (error,success) => {
+        if (error) {
+          return next(error);
+        } else {
+          res.status = 204;
+          res.end();
+        }
+      });
+    }
+  });
 });
 
 module.exports = courses;
