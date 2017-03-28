@@ -21,7 +21,11 @@ courses.get('/', (req, res, next) => {
 courses.post('/', (req, res, next) => {
   let course = new Courses(req.body);
   course.save((error,course) => {
-    if (error) {
+    if (error.message === 'Course validation failed') {
+      let validationErrors = formatErrors(error);
+      res.status = 400;
+      res.json(validationErrors);
+    } else if (error) {
       return next(error);
     } else {
       res.status = 201;
@@ -117,5 +121,24 @@ courses.delete('/:courseid/reviews/:id', (req, res, next) => {
     }
   });
 });
+
+const formatErrors = (error) => {
+  let validationErrors = {
+    "message": "Validation Failed",
+    'errors': {
+      'property': [
+
+      ]
+    }
+  };
+  for (let item in error.errors) {
+    if (error.errors.hasOwnProperty(item)) {
+      let code = error.errors[item].path;
+      let message = error.errors[item].message;
+      validationErrors.errors.property.push({'code': code, 'message': message});
+    }
+  };
+  return validationErrors;
+}
 
 module.exports = courses;
