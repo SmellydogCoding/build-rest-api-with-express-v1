@@ -65,7 +65,11 @@ courses.put('/:id', (req, res, next) => {
       model: 'User'
     };
 
-    if (error) {
+    if (error.message === 'Course validation failed') {
+      let validationErrors = formatErrors(error);
+      res.status = 400;
+      res.json(validationErrors);
+    } else if (error) {
       return next(error);
     } else {
       res.status = 200;
@@ -87,7 +91,11 @@ courses.post('/:courseid/reviews', (req, res, next) => {
   let id = req.params.courseid;
   let review = new Reviews(req.body);
   review.save((error,review) => {
-    if (error) {
+if (error.message === 'Course validation failed') {
+      let validationErrors = formatErrors(error);
+      res.status = 400;
+      res.json(validationErrors);
+    } else if (error) {
       return next(error);
     } else {
       Courses.update({_id: id}, {$push: {reviews: review}}, (error,success) => {
