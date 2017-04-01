@@ -5,6 +5,7 @@ const courses = express.Router();
 const Users = require('./models/users.js');
 const Reviews = require('./models/reviews.js');
 const Courses = require('./models/courses.js');
+const mid = require('./middleware/mid.js');
 
 courses.get('/', (req, res, next) => {
   Courses.find({}, (error,courses) => {
@@ -18,7 +19,7 @@ courses.get('/', (req, res, next) => {
   });
 });
  
-courses.post('/', (req, res, next) => {
+courses.post('/', mid.authRequired, (req, res, next) => {
   let course = new Courses(req.body);
   course.save((error,course) => {
     if (error.message === 'Course validation failed') {
@@ -56,7 +57,7 @@ courses.get('/:id', (req, res, next) => {
   });
 });
 
-courses.put('/:id', (req, res, next) => {
+courses.put('/:id', mid.authRequired, (req, res, next) => {
   let id = req.params.id;
   Courses.findById(id).populate('user', 'fullName').populate('reviews').exec((error, course) => {
     
@@ -87,7 +88,7 @@ courses.put('/:id', (req, res, next) => {
   });
 });
 
-courses.post('/:courseid/reviews', (req, res, next) => {
+courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   let id = req.params.courseid;
   let review = new Reviews(req.body);
   review.save((error,review) => {
@@ -111,7 +112,7 @@ if (error.message === 'Course validation failed') {
   });
 });
 
-courses.delete('/:courseid/reviews/:id', (req, res, next) => {
+courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   let cID = req.params.courseid;
   let rID = req.params.id;
   Reviews.findByIdAndRemove(rID, (error,success) => {

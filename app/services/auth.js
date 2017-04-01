@@ -31,6 +31,7 @@ function AuthService(sessionService, validationService, dataService, $q) {
     // attempt to get the user from the data service
     return dataService.getUser().then(
       function(response) {
+        console.log(response);
         var user = response && response.data && response.data.data && response.data.data[0];
 
         currentUser.isAuthenticated = true;

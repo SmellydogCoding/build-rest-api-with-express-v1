@@ -17,10 +17,6 @@ db.on('open', () => {console.log('Database connection successful')});
 // mongo error
 db.on('error', console.error.bind(console, 'connection error:'));
 
-// require("./models/users.js");
-// require("./models/reviews");
-// require("./models/reviews");
-
 // const seeder = require('mongoose-seeder');
 // const data = require('./data/data.json');
 
