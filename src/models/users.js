@@ -39,6 +39,19 @@ UserSchema.pre('save', function(next)  {
   });
 });
 
+UserSchema.pre('update', function(next)  {
+  let user = this;
+  bcrypt.hash(user._update.$set.password, 10, function(error, hash) {
+    if (error) {
+      return next(error);
+    } else {
+      user._update.$set.password = hash;
+      user._update.$set.confirmPassword = hash;
+      next();
+    }
+  });
+});
+
 UserSchema.pre('validate', function(next) {
   let user = this;
   if (user.password !== user.confirmPassword) {
