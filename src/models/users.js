@@ -5,23 +5,23 @@ const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+")
 const UserSchema = new mongoose.Schema({
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Please enter your Full Name"],
       trim: true,
     },
     emailAddress: {
       type: String,
-      required: true,
+      required: [true, "Please enter an email address"],
       unique: true,
       match: [emailRegex, "Please enter a valid email address"],
       trim: true
     },
     password: {
       type: String,
-      required: true
+      required: [true, "A password is required"]
     },
     confirmPassword: {
       type: String,
-      required: true
+      required: [true, "Please re-enter your password"]
     }
 });
 
@@ -55,7 +55,7 @@ UserSchema.pre('update', function(next)  {
 UserSchema.pre('validate', function(next) {
   let user = this;
   if (user.password !== user.confirmPassword) {
-    return next('Passwords must match');
+    this.invalidate();
   } else {
     next();
   }

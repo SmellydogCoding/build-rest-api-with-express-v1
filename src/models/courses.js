@@ -6,11 +6,11 @@ const StepsSchema = new mongoose.Schema({
   stepNumber: Number,
   title: {
     type: String,
-    required: true
+    required: [true, "The title of the step is required"]
   },
   description: {
     type: String,
-    required: true
+    required: [true, "A description of the step is required"]
   }
 });
 
@@ -18,11 +18,11 @@ const CourseSchema = new mongoose.Schema({
     user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     title: {
       type: String,
-      required: true
+      required: [true, "A course title is required"]
     },
     description: {
       type: String,
-      required: true
+      required: [true, "The course description is required"]
     },
     estimatedTime: String,
     materialsNeeded: String,

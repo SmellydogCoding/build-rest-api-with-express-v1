@@ -12,9 +12,7 @@ courses.get('/', (req, res, next) => {
     if (error) {
       return next(error);
     } else {
-        res.status = 200;
-        courses = {data: courses}
-        res.json(courses);
+      res.status(200).json({data: courses});
     }
   });
 });
@@ -22,16 +20,10 @@ courses.get('/', (req, res, next) => {
 courses.post('/', mid.authRequired, (req, res, next) => {
   let course = new Courses(req.body);
   course.save((error,course) => {
-    if (error.message === 'Course validation failed') {
-      let validationErrors = formatErrors(error);
-      res.status = 400;
-      res.json(validationErrors);
-    } else if (error) {
+    if (error) {
       return next(error);
     } else {
-      res.status = 201;
-      res.location('/');
-      res.end();
+      res.status(201).location('/').end();
     }
   });
 });
@@ -93,9 +85,10 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   let review = new Reviews(req.body);
   review.save((error,review) => {
 if (error.message === 'Course validation failed') {
-      let validationErrors = formatErrors(error);
-      res.status = 400;
-      res.json(validationErrors);
+      // let validationErrors = formatErrors(error);
+      // res.status = 400;
+      // res.json(validationErrors);
+      return next(error);
     } else if (error) {
       return next(error);
     } else {
@@ -131,23 +124,19 @@ courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   });
 });
 
-const formatErrors = (error) => {
-  let validationErrors = {
-    "message": "Validation Failed",
-    'errors': {
-      'property': [
-
-      ]
-    }
-  };
-  for (let item in error.errors) {
-    if (error.errors.hasOwnProperty(item)) {
-      let code = error.errors[item].path;
-      let message = error.errors[item].message;
-      validationErrors.errors.property.push({'code': code, 'message': message});
-    }
-  };
-  return validationErrors;
-}
+// const formatErrors = (error) => {
+//   let validationErrors = {
+//     "message": "Validation Failed",
+//     'errors': {}
+//   };
+//   for (let item in error.errors) {
+//     if (error.errors.hasOwnProperty(item)) {
+//       let property = error.errors[item].path;
+//       let message = error.errors[item].message;
+//       validationErrors.errors[property] = ([{'code': 400, 'message': message}]);
+//     }
+//   };
+//   return validationErrors;
+// }
 
 module.exports = courses;

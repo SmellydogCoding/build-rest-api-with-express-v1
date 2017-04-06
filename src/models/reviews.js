@@ -5,7 +5,7 @@ const ReviewSchema = new mongoose.Schema({
     postedOn: Date,
     rating: {
         type: Number,
-        required: true,
+        required: [true, "A course rating is required"],
         min: 1,
         max: 5
     },

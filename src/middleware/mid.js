@@ -6,31 +6,31 @@ const bcrypt = require('bcrypt');
 
 const authRequired = (req,res,next) => {
   if (auth(req)) {
-    // res.send(auth(req));
     let username = auth(req).name;
     let password = auth(req).pass;
     Users.find({emailAddress: username}, (error,user) => {
       if (error) {
         return next(error);
       } else if (user[0] === undefined) {
-        res.status = 401;
-        res.send('Username not found');
+        const error = new Error("That username does not exist");
+        error.status = 401;
+        return next(error);
       } else {
         bcrypt.compare(password, user[0].password , (error, result) => {
           if (result === true) {
-            res.status = 200;
-            res.currentUser = user[0];
-            res.send(res.currentUser);
+            res.currentUser = { "data": [ {"fullName": user[0].fullName} ] };
+            return next();
           } else {
-            res.status = 401;
-            res.send('invalid password');
+            const error = new Error("Incorrect Password");
+            error.status = 401;
+            return next(error);
           }
         })
       }
     });
   } else {
     res.status = 401;
-    res.send('authentication required');
+    res.send('You must login to access this section');
   }
 }
 

@@ -5,8 +5,8 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-// const methodOverride = require('method-override');
 const mongoose = require('mongoose');
+const validation = require('./validation.js')
 // const session = require('express-session');
 // const mongoStore = require('connect-mongo')(session);
 
@@ -72,11 +72,13 @@ app.use((req, res, next) => {
 // error handler
 // define as the last app.use callback
 app.use((error, req, res, next) => {
-  res.status(error.status || 500);
-  res.send({
-    message: error.message,
-    error: {}
-  });
+  if (error.message === 'Course validation failed' || error.message === 'Review validation failed' || error.message === 'User validation failed') {
+    let validationErrors = validation.formatErrors(error);
+    res.status(400).json(validationErrors);
+  } else {
+    error = { 'message': error.message, 'status': error.status };
+    res.status(error.status || 500).json(error);
+  }
 });
 
 // start listening on our port
