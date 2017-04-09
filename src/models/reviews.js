@@ -6,7 +6,7 @@ const ReviewSchema = new mongoose.Schema({
     rating: {
         type: Number,
         required: [true, "A course rating is required"],
-        min: 1,
+        min: [1, 'Please give this course a rating (click on one of the stars)'],
         max: 5
     },
     review: String

@@ -20,4 +20,12 @@ users.post('/', (req, res, next) => {
   });
 });
 
+users.put('/', (req, res, next) => {
+  res.status(403).json('Cannot edit a collection of users.');
+});
+
+users.delete('/', (req, res, next) => {
+  res.status(403).json('Cannot delete a collection of users.');
+});
+
 module.exports = users;

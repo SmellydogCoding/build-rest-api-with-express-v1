@@ -18,7 +18,7 @@ const authRequired = (req,res,next) => {
       } else {
         bcrypt.compare(password, user[0].password , (error, result) => {
           if (result === true) {
-            res.currentUser = { "data": [ {"fullName": user[0].fullName} ] };
+            res.currentUser = { "data": [ {"fullName": user[0].fullName, "_id": user[0]._id} ] };
             return next();
           } else {
             const error = new Error("Incorrect Password");

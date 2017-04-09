@@ -15,7 +15,10 @@ const StepsSchema = new mongoose.Schema({
 });
 
 const CourseSchema = new mongoose.Schema({
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
     title: {
       type: String,
       required: [true, "A course title is required"]
@@ -34,9 +37,9 @@ const CourseSchema = new mongoose.Schema({
   toJSON: { virtuals: true }
 });
 
-CourseSchema.path('steps').validate((value) => {
-  return value.length;
-},"The course must have at least one step");
+// CourseSchema.path('steps').validate((value) => {
+//   return value.length;
+// },"The course must have at least one step");
 
 CourseSchema.virtual('overallRating').get(function() {
   let total = 0;

@@ -58,11 +58,7 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
       model: 'User'
     };
 
-    if (error.message === 'Course validation failed') {
-      let validationErrors = formatErrors(error);
-      res.status = 400;
-      res.json(validationErrors);
-    } else if (error) {
+    if (error) {
       return next(error);
     } else {
       res.status = 200;
@@ -82,14 +78,11 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
 
 courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   let id = req.params.courseid;
+  req.body.user = res.currentUser.data[0]._id;
+  req.body.postedOn = new Date().toISOString();
   let review = new Reviews(req.body);
   review.save((error,review) => {
-if (error.message === 'Course validation failed') {
-      // let validationErrors = formatErrors(error);
-      // res.status = 400;
-      // res.json(validationErrors);
-      return next(error);
-    } else if (error) {
+    if (error) {
       return next(error);
     } else {
       Courses.update({_id: id}, {$push: {reviews: review}}, (error,success) => {
@@ -124,19 +117,40 @@ courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   });
 });
 
-// const formatErrors = (error) => {
-//   let validationErrors = {
-//     "message": "Validation Failed",
-//     'errors': {}
-//   };
-//   for (let item in error.errors) {
-//     if (error.errors.hasOwnProperty(item)) {
-//       let property = error.errors[item].path;
-//       let message = error.errors[item].message;
-//       validationErrors.errors[property] = ([{'code': 400, 'message': message}]);
-//     }
-//   };
-//   return validationErrors;
-// }
+courses.put('/', (req, res, next) => {
+  res.status(403).json('Cannot edit a collection of courses.');
+});
+
+courses.delete('/', (req, res, next) => {
+  res.status(403).json('Cannot delete a collection of courses.');
+});
+
+courses.post('/:id', (req, res, next) => {
+  res.status(405).set({'Accept': ['GET', 'PUT']}).json('Use the /api/courses/ route to create a course');
+});
+
+courses.delete('/:id', (req, res, next) => {
+  res.status(403).set({'Accept': ['GET', 'PUT']}).json('Cannot delete a course.');
+});
+
+courses.put('/:courseid/:reviews', (req, res, next) => {
+  res.status(403).json('Cannot edit a collection of reviews.');
+});
+
+courses.delete('/:courseid/reviews', (req, res, next) => {
+  res.status(403).json('Cannot delete a collection of reviews.');
+});
+
+courses.get('/:courseid/:reviews/:id', (req, res, next) => {
+  res.status(403).set({'Accept': 'DELETE'}).json('Cannot get a single review.  Use the /api/courses/:id route to get reviews for a specific course.');
+});
+
+courses.post('/:courseid/reviews/:id', (req, res, next) => {
+  res.status(405).set({'Accept': 'DELETE'}).json('Use the /api/courses/:courseid/reviews route to create a review.');
+});
+
+courses.put('/:courseid/reviews/:id', (req, res, next) => {
+  res.status(403).set({'Accept': 'DELETE'}).json('Cannot edit a review.');
+});
 
 module.exports = courses;
