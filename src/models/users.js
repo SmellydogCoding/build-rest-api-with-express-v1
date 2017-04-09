@@ -11,8 +11,8 @@ const UserSchema = new mongoose.Schema({
     emailAddress: {
       type: String,
       required: [true, "Please enter an email address"],
-      unique: true,
       match: [emailRegex, "Please enter a valid email address"],
+      // validate: [uniqueEmail, "That email is already in use"],
       trim: true
     },
     password: {
@@ -21,9 +21,18 @@ const UserSchema = new mongoose.Schema({
     },
     confirmPassword: {
       type: String,
-      required: [true, "Please re-enter your password"]
+      required: [true, "Please re-enter your password"],
+      validate: [passwordsMatch, "Passwords do not match"]
     }
 });
+
+function passwordsMatch() {
+  return this.password === this.confirmPassword;
+}
+
+function validEmail() {
+  return emailRegex.test(this.emailAddress);
+}
 
 // hash password before saving to database
 UserSchema.pre('save', function(next)  {
@@ -39,27 +48,14 @@ UserSchema.pre('save', function(next)  {
   });
 });
 
-UserSchema.pre('update', function(next)  {
-  let user = this;
-  bcrypt.hash(user._update.$set.password, 10, function(error, hash) {
+UserSchema.path('emailAddress').validate((value,done) => {
+  User.count({emailAddress: value}, function(error,result) {
     if (error) {
-      return next(error);
-    } else {
-      user._update.$set.password = hash;
-      user._update.$set.confirmPassword = hash;
-      next();
+      return done(error);
     }
+    done(!result)
   });
-});
-
-UserSchema.pre('validate', function(next) {
-  let user = this;
-  if (user.password !== user.confirmPassword) {
-    this.invalidate();
-  } else {
-    next();
-  }
-});
+},"That email address is already in use");
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;
