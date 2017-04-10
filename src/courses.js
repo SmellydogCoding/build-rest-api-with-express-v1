@@ -101,6 +101,29 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
 courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   let cID = req.params.courseid;
   let rID = req.params.id;
+
+  Reviews.findOne({_id: rID}).populate('user','fullName').exec((error,review) => {
+    if (error) {
+      return next(error);
+    } else if (review.user.fullName !== res.currentUser.data[0].fullName) {
+      Courses.findOne({_id: cID}).populate('user','fullName').exec((error, course) => {
+        if (error) {
+          return next(error);
+        } else if (course.user.fullName === res.currentUser.data[0].fullName) {
+          deleteReview(rID,cID,res,next);
+        } else {
+          const error = new Error('Reviews can only be deleted by the review author or the course owner.');
+          error.status = 400;
+          return next(error);
+        }
+      });
+    } else {
+      deleteReview(rID,cID,res,next);
+    }
+  });
+});
+
+const deleteReview = (rID,cID,res,next) => {
   Reviews.findByIdAndRemove(rID, (error,success) => {
     if (error) {
       return next(error);
@@ -109,13 +132,12 @@ courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
         if (error) {
           return next(error);
         } else {
-          res.status = 204;
-          res.end();
+          res.status(204).end();
         }
       });
     }
   });
-});
+}
 
 courses.put('/', (req, res, next) => {
   res.status(403).json('Cannot edit a collection of courses.');

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const Users = require('./users.js');
+const User = require('./users.js');
+
 const ReviewSchema = new mongoose.Schema({
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'Users'},
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     postedOn: Date,
     rating: {
         type: Number,
