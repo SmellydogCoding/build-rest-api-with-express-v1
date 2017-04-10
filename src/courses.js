@@ -80,18 +80,24 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   let id = req.params.courseid;
   req.body.user = res.currentUser.data[0]._id;
   req.body.postedOn = new Date().toISOString();
-  let review = new Reviews(req.body);
-  review.save((error,review) => {
-    if (error) {
+  Courses.findOne({_id: id}).populate('user','fullName').exec((error,course) => {
+    if (course.user.fullName === res.currentUser.data[0].fullName) {
+      const error = new Error('You cannot create a review on a course that you own.');
+      error.status = 400;
       return next(error);
     } else {
-      Courses.update({_id: id}, {$push: {reviews: review}}, (error,success) => {
+      let review = new Reviews(req.body);
+      review.save((error,review) => {
         if (error) {
           return next(error);
         } else {
-          res.status = 201;
-          res.location('/' + id);
-          res.end();
+          Courses.update({_id: id}, {$push: {reviews: review}}, (error,success) => {
+            if (error) {
+              return next(error);
+            } else {
+              res.status(201).location('/' + id).end();
+            }
+          });
         }
       });
     }
@@ -101,7 +107,6 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
 courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   let cID = req.params.courseid;
   let rID = req.params.id;
-
   Reviews.findOne({_id: rID}).populate('user','fullName').exec((error,review) => {
     if (error) {
       return next(error);
