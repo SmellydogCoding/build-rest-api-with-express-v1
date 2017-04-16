@@ -18,12 +18,24 @@ courses.get('/', (req, res, next) => {
 });
  
 courses.post('/', mid.authRequired, (req, res, next) => {
-  let course = new Courses(req.body);
-  course.save((error,course) => {
-    if (error) {
-      return next(error);
+  // use req.body._id to query the fullName of the user that submitted the request
+  // match req.body.fullName to res.currentUser.data[0].fullName
+  // if they match, post the new course
+  // if they don't throw new error
+  Users.findOne({_id: req.body.user._id}).exec((error,user) => {
+    if (user.fullName === res.currentUser.data[0].fullName) {
+      let course = new Courses(req.body);
+      course.save((error,course) => {
+        if (error) {
+          return next(error);
+        } else {
+          res.status(201).location('/').end();
+        }
+      });
     } else {
-      res.status(201).location('/').end();
+      const error = new Error('Only the current logged in user can create a course.');
+      error.status = 400;
+      return next(error);
     }
   });
 });
@@ -50,6 +62,7 @@ courses.get('/:id', (req, res, next) => {
 });
 
 courses.put('/:id', mid.authRequired, (req, res, next) => {
+  
   let id = req.params.id;
   Courses.findById(id).populate('user', 'fullName').populate('reviews').exec((error, course) => {
     
@@ -61,17 +74,24 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
     if (error) {
       return next(error);
     } else {
-      res.status = 200;
-      Courses.populate(course, options, (error, course) => {
-        course.update(req.body,(error,result) => {
-          if (error) {
-            return next(error);
-          } else {
-            res.status = 204;
-            res.end();
-          }
+      // match req.body.user._id to course.user.id
+      // if they match, put the updated course
+      // if they don't throw new error
+      if (req.body.user._id === course.user.id) {
+        Courses.populate(course, options, (error, course) => {
+          course.update(req.body,(error,result) => {
+            if (error) {
+              return next(error);
+            } else {
+              res.status(204).end();
+            }
+          });
         });
-      });
+      } else {
+        const error = new Error('Only the course author can edit a course.');
+        error.status = 400;
+        return next(error);
+      }
     }
   });
 });
