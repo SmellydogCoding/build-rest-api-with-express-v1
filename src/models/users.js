@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/;
 
 const UserSchema = new mongoose.Schema({
     fullName: {
@@ -16,11 +17,12 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
       type: String,
-      required: [true, "A password is required"]
+      required: [true, "A password is required"],
+      match: [passwordRegex, "That is not a valid password.  Password must be at least 8 characters with at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character."]
     },
     confirmPassword: {
       type: String,
-      required: [true, "Please re-enter your password"],
+      required: [true, "Passwords do not match"],
       validate: [passwordsMatch, "Passwords do not match"]
     }
 });

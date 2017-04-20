@@ -106,7 +106,7 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
 
     for (var i = 0; i < course.reviews.length; i++) {
       if (course.reviews[i].user.toJSON() === req.body.user) {
-        // let error = new Error(buildError("Review validation failed","ValidationError","You can only post 1 review on a course.","You can only post 1 review on a course."));
+        // format the error so that it will trip the validation handler in the app
         let error = new Error('Review validation failed');
         error.name = "ValidationError";
         error.errors = [{"message": "You can only post 1 review per course", "path": "username"}];
