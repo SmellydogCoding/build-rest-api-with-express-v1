@@ -33,7 +33,7 @@ courses.post('/', mid.authRequired, (req, res, next) => {
         }
       });
     } else {
-      const error = new Error('Only the current logged in user can create a course.');
+      let error = new Error('Only the current logged in user can create a course.');
       error.status = 400;
       return next(error);
     }
@@ -88,7 +88,7 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
           });
         });
       } else {
-        const error = new Error('Only the course author can edit a course.');
+        let error = new Error('Only the course author can edit a course.');
         error.status = 400;
         return next(error);
       }
@@ -99,10 +99,24 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
 courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   let id = req.params.courseid;
   req.body.user = res.currentUser.data[0]._id;
+  let currentUser = req.body.user;
   req.body.postedOn = new Date().toISOString();
-  Courses.findOne({_id: id}).populate('user','fullName').exec((error,course) => {
+
+  Courses.findOne({_id: id}).populate('user','fullName').populate('reviews').exec((error,course) => {
+
+    for (var i = 0; i < course.reviews.length; i++) {
+      if (course.reviews[i].user.toJSON() === req.body.user) {
+        // let error = new Error(buildError("Review validation failed","ValidationError","You can only post 1 review on a course.","You can only post 1 review on a course."));
+        let error = new Error('Review validation failed');
+        error.name = "ValidationError";
+        error.errors = [{"message": "You can only post 1 review per course", "path": "username"}];
+        error.status = 400;
+        return next(error);
+      }
+    };
+
     if (course.user.fullName === res.currentUser.data[0].fullName) {
-      const error = new Error('You cannot create a review on a course that you own.');
+      let error = new Error('You cannot create a review on a course that you own.');
       error.status = 400;
       return next(error);
     } else {
@@ -124,6 +138,31 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   });
 });
 
+const buildError = (typeMessage,name,errorMessage,path) => {
+  this.message = typeMessage;
+  this.name = name;
+  this.errors = {};
+  this.errors.message = errorMessage;
+  this.errors.path = path;
+}
+
+const alreadyReviewed = (course,currentUser) => {
+  // iterate over course.reviews
+  // match review[i].user.id to currentUser
+  // if they match, return true
+  return new Promise((resolve,reject) => {
+    let reviewed = false;
+    course.reviews.forEach((review) => {
+      Reviews.find({_id: review.id}).populate('user','fullName').exec((error,review) => {
+        if (review[0].user.id === currentUser) {
+          reviewed = true;
+        }
+      });
+    });
+    resolve(reviewed);
+  });
+}
+
 courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   let cID = req.params.courseid;
   let rID = req.params.id;
@@ -137,7 +176,7 @@ courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
         } else if (course.user.fullName === res.currentUser.data[0].fullName) {
           deleteReview(rID,cID,res,next);
         } else {
-          const error = new Error('Reviews can only be deleted by the review author or the course owner.');
+          let error = new Error('Reviews can only be deleted by the review author or the course owner.');
           error.status = 400;
           return next(error);
         }
