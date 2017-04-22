@@ -12,8 +12,8 @@ const formatErrors = (error) => {
       let message = error.errors[item].message;
       validationErrors.errors[property] = ([{'code': 400, 'message': message}]);
     }
-  };
+  }
   return validationErrors;
-}
+};
 
 module.exports.formatErrors = formatErrors;
