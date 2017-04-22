@@ -52,10 +52,10 @@ courses.get('/:id', (req, res, next) => {
     if (error) {
       return next(error);
     } else {
-      res.status = 200;
+      // populate courses with documents from the user and reviews collection
       Courses.populate(courses, options, (error, courses) => {
         courses = {data: [courses]};
-        res.json(courses);
+        res.status(200).json(courses);
       });
     }
   });
@@ -97,6 +97,7 @@ courses.put('/:id', mid.authRequired, (req, res, next) => {
 });
 
 courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
+  // add current user and date to the response body for posting the review
   let id = req.params.courseid;
   req.body.user = res.currentUser.data[0]._id;
   let currentUser = req.body.user;
@@ -104,8 +105,9 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
 
   Courses.findOne({_id: id}).populate('user','fullName').populate('reviews').exec((error,course) => {
 
-    for (var i = 0; i < course.reviews.length; i++) {
-      if (course.reviews[i].user.toJSON() === req.body.user) {
+    // check to see if the current user has already posted a review for this course
+    for (let r = 0; r < course.reviews.length; r++) {
+      if (course.reviews[r].user.toJSON() === req.body.user) {
         // format the error so that it will trip the validation handler in the app
         let error = new Error('Review validation failed');
         error.name = "ValidationError";
@@ -115,6 +117,7 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
       }
     };
 
+    // check to see if the current user is also the create of the course that they are trying to post a review on
     if (course.user.fullName === res.currentUser.data[0].fullName) {
       let error = new Error('You cannot create a review on a course that you own.');
       error.status = 400;
@@ -138,41 +141,18 @@ courses.post('/:courseid/reviews', mid.authRequired, (req, res, next) => {
   });
 });
 
-const buildError = (typeMessage,name,errorMessage,path) => {
-  this.message = typeMessage;
-  this.name = name;
-  this.errors = {};
-  this.errors.message = errorMessage;
-  this.errors.path = path;
-}
-
-const alreadyReviewed = (course,currentUser) => {
-  // iterate over course.reviews
-  // match review[i].user.id to currentUser
-  // if they match, return true
-  return new Promise((resolve,reject) => {
-    let reviewed = false;
-    course.reviews.forEach((review) => {
-      Reviews.find({_id: review.id}).populate('user','fullName').exec((error,review) => {
-        if (review[0].user.id === currentUser) {
-          reviewed = true;
-        }
-      });
-    });
-    resolve(reviewed);
-  });
-}
-
 courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   let cID = req.params.courseid;
   let rID = req.params.id;
   Reviews.findOne({_id: rID}).populate('user','fullName').exec((error,review) => {
     if (error) {
       return next(error);
+      // check to see if the current user is not the author of the review
     } else if (review.user.fullName !== res.currentUser.data[0].fullName) {
       Courses.findOne({_id: cID}).populate('user','fullName').exec((error, course) => {
         if (error) {
           return next(error);
+          // if the current user is not the author of the review, check to see if the current user is the author of the course
         } else if (course.user.fullName === res.currentUser.data[0].fullName) {
           deleteReview(rID,cID,res,next);
         } else {
@@ -187,6 +167,7 @@ courses.delete('/:courseid/reviews/:id', mid.authRequired, (req, res, next) => {
   });
 });
 
+// delete a review (I made it a seperate function because the courses.delete route was getting a little crowded)
 const deleteReview = (rID,cID,res,next) => {
   Reviews.findByIdAndRemove(rID, (error,success) => {
     if (error) {
@@ -202,6 +183,8 @@ const deleteReview = (rID,cID,res,next) => {
     }
   });
 }
+
+// disallowed http verbs
 
 courses.put('/', (req, res, next) => {
   res.status(403).json('Cannot edit a collection of courses.');

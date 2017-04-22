@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+// check for properly formatted email
 const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+// check for properly formatted password
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/;
 
 const UserSchema = new mongoose.Schema({
@@ -13,6 +15,7 @@ const UserSchema = new mongoose.Schema({
       type: String,
       required: [true, "Please enter an email address"],
       match: [emailRegex, "Please enter a valid email address"],
+      unique: true,
       trim: true
     },
     password: {
@@ -27,12 +30,10 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
+// make sure that password and confirm password match
+// personally, I would prefer to do this at the application (route) level and not store confirmPassword in the database at all
 function passwordsMatch() {
   return this.password === this.confirmPassword;
-}
-
-function validEmail() {
-  return emailRegex.test(this.emailAddress);
 }
 
 // hash password before saving to database
@@ -48,15 +49,6 @@ UserSchema.pre('save', function(next)  {
     }
   });
 });
-
-UserSchema.path('emailAddress').validate((value,done) => {
-  User.count({emailAddress: value}, function(error,result) {
-    if (error) {
-      return done(error);
-    }
-    done(!result)
-  });
-},"That email address is already in use");
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;

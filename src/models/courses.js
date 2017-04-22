@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('./users.js');
 const Reviews = require('./reviews.js');
 
+// giving the steps it's own schema in order to do custom validations
 const StepsSchema = new mongoose.Schema({
   stepNumber: Number,
   title: {
@@ -37,10 +38,7 @@ const CourseSchema = new mongoose.Schema({
   toJSON: { virtuals: true }
 });
 
-// CourseSchema.path('steps').validate((value) => {
-//   return value.length;
-// },"The course must have at least one step");
-
+// the overall rating schema virtural
 CourseSchema.virtual('overallRating').get(function() {
   let total = 0;
   this.reviews.forEach((review) => {

@@ -4,10 +4,12 @@ const auth = require('basic-auth');
 const Users = require('../models/users.js');
 const bcrypt = require('bcrypt');
 
+// make sure that the current user is authenticated
 const authRequired = (req,res,next) => {
   if (auth(req)) {
     let username = auth(req).name;
     let password = auth(req).pass;
+    // validate username and password
     Users.find({emailAddress: username}, (error,user) => {
       if (error) {
         return next(error);
@@ -29,6 +31,7 @@ const authRequired = (req,res,next) => {
       }
     });
   } else {
+    // error if no authentication is sent
     res.status = 401;
     res.send('You must login to access this section');
   }

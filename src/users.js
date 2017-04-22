@@ -20,6 +20,8 @@ users.post('/', (req, res, next) => {
   });
 });
 
+//disallowed http verbs
+
 users.put('/', (req, res, next) => {
   res.status(403).json('Cannot edit a collection of users.');
 });
